@@ -1,192 +1,164 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-
-struct node
-
-{
-int data;
-struct node *prev, *next;
-
+struct node {
+    int data;
+    struct node *prev, *next;
 };
 
+// Global pointers initialized to NULL
 struct node *head = NULL, *tail = NULL;
 
-struct node * createNode(int data)
-
-{
-
-
-struct node *newnode = (struct node *)malloc(sizeof (struct node));
-
-newnode->data = data;
-newnode->next = newnode->prev = NULL;
-return (newnode);
-
+// Helper function to allocate and initialize a new node
+struct node* createNode(int data) {
+    struct node *newnode = (struct node *)malloc(sizeof(struct node));
+    if (newnode == NULL) {
+        printf("Memory allocation failed!\n");
+        exit(1);
+    }
+    newnode->data = data;
+    newnode->next = NULL;
+    newnode->prev = NULL;
+    return newnode;
 }
 
+// Insert an element at the front of the deque
+void enqueueAtFront(int data) {
+    struct node *newnode = createNode(data);
 
-
-void createSentinels()  {
-
-head = createNode(0);
-tail = createNode(0);
-head->next = tail;
-tail->prev = head;
+    if (head == NULL) {
+        // Queue is empty: new node becomes both head and tail
+        head = tail = newnode;
+    } else {
+        // Queue is not empty: attach before current head
+        newnode->next = head;
+        head->prev = newnode;
+        head = newnode;
+    }
 }
 
+// Insert an element at the rear of the deque
+void enqueueAtRear(int data) {
+    struct node *newnode = createNode(data);
 
-
-void enqueueAtFront(int data)
-{
-struct node *newnode, *temp;
-newnode = createNode(data);
-temp = head->next;
-head->next = newnode;
-newnode->prev = head;
-
-newnode->next = temp;
-temp->prev = newnode;
+    if (tail == NULL) {
+        // Queue is empty: new node becomes both head and tail
+        head = tail = newnode;
+    } else {
+        // Queue is not empty: attach after current tail
+        tail->next = newnode;
+        newnode->prev = tail;
+        tail = newnode;
+    }
 }
 
+// Delete an element from the front of the deque
+void dequeueAtFront() {
+    if (head == NULL) {
+        printf("Queue is empty\n");
+        return;
+    }
 
-void enqueueAtRear(int data)
+    struct node *temp = head;
 
-{
-struct node *newnode, *temp;
-newnode = createNode(data);
+    if (head == tail) {
+        // Only one node in the queue
+        head = tail = NULL;
+    } else {
+        // Move head pointer to the next node
+        head = head->next;
+        head->prev = NULL;
+    }
 
-temp = tail->prev;
-tail->prev = newnode;
-newnode->next = tail;
-newnode->prev = temp;
-temp->next = newnode;
-
+    free(temp);
 }
 
-/* deletion at the front of the queue */
-void dequeueAtFront()
-{
+// Delete an element from the rear of the deque
+void dequeueAtRear() {
+    if (tail == NULL) {
+        printf("Queue is empty\n");
+        return;
+    }
 
-struct node *temp;
-if (head->next == tail)
+    struct node *temp = tail;
 
-{
-printf("Queue is empty\n");
+    if (head == tail) {
+        // Only one node in the queue
+        head = tail = NULL;
+    } else {
+        // Move tail pointer to the previous node
+        tail = tail->prev;
+        tail->next = NULL;
+    }
+
+    free(temp);
 }
 
-else
-{
-temp = head->next;
-head->next = temp->next;
-temp->next->prev = head;
+// Display all elements from front to rear
+void display() {
+    if (head == NULL) {
+        printf("Queue is empty\n");
+        return;
+    }
 
-free(temp);
-}
-return;
-}
-
-
-
-/* deletion at the rear of the queue */
-
-void dequeueAtRear()
-
-{
-struct node *temp;
-if (tail->prev == head)
-
-{
-printf("Queue is empty\n");
-}
-else
-{
-
-temp = tail->prev;
-tail->prev = temp->prev;
-temp->prev->next = tail;
-free(temp);
+    struct node *temp = head;
+    while (temp != NULL) {
+        printf("%-3d", temp->data);
+        temp = temp->next;
+    }
+    printf("\n");
 }
 
-return;
-}
+int main() {
+    int data, ch;
 
+    while (1) {
+        printf("\n1. Enqueue at front\n2. Enqueue at rear\n");
+        printf("3. Dequeue at front\n4. Dequeue at rear\n");
+        printf("5. Display\n6. Exit\n");
+        printf("Enter your choice: ");
 
-/* display elements present in the queue */
+        if (scanf("%d", &ch) != 1) {
+            break;
+        }
 
-void display()
-{
-struct node *temp;
+        switch (ch) {
+            case 1:
+                printf("Enter data to insert: ");
+                scanf("%d", &data);
+                enqueueAtFront(data);
+                break;
 
-if (head->next == tail)
-{
-printf("Queue is empty\n");
-return;
-}
+            case 2:
+                printf("Enter data to insert: ");
+                scanf("%d", &data);
+                enqueueAtRear(data);
+                break;
 
-temp = head->next;
-while (temp != tail)
-{
+            case 3:
+                dequeueAtFront();
+                break;
 
-printf("%-3d", temp->data);
-temp = temp->next;
-}
-printf("\n");
-}
+            case 4:
+                dequeueAtRear();
+                break;
 
+            case 5:
+                display();
+                break;
 
+            case 6:
+                // Clean up remaining elements if any
+                while (head != NULL) {
+                    dequeueAtFront();
+                }
+                exit(0);
 
-int main()
-{
-int data, ch;
+            default:
+                printf("Enter a valid option\n");
+                break;
+        }
+    }
 
-createSentinels();
-while (1)
-
-{
-printf("1. Enqueue at front\n2. Enqueue at rear\n");
-printf("3. Dequeue at front\n4. Dequeue at rear\n");
-
-printf("5. Display\n6. Exit\n");
-printf("Enter your choice:");
-scanf("%d", &ch);
-switch (ch) 
-{
-
-case 1:
-printf("Enter the data to insert:");
-scanf("%d", &data);
-enqueueAtFront(data);
-break;
-
-case 2:
-
-printf("Enter ur data to insert:");
-scanf("%d", &data);
-enqueueAtRear(data);
-break;
-
-case 3:
-dequeueAtFront();
-break;
-
-case 4:
-
-dequeueAtRear();
-break;
-
-case 5:
-display();
-break;
-
-case 6:
-exit(0);
-
-default:
-printf(" enter correct option\n");
-break;
-} 
-}
-return 0;
+    return 0;
 }
